@@ -1,5 +1,6 @@
 package mylibs;
 
+
 public class Employee {
     private int empID;
     private String name;
@@ -87,9 +88,15 @@ public class Employee {
         this.status = status;
     }
 
-	public int getId() {
-		return 0;
-	}
-
-	
-	}
+    
+    // Updated search method with Prati and Aastha
+    public static Employee search(int empID) {
+        if (empID == 1) {
+            return new Employee(1, "Prati", "IT", 60000, "prati@example.com", "Active");
+        } else if (empID == 2) {
+            return new Employee(2, "Aastha", "HR", 55000, "aastha@example.com", "Active");
+        } else {
+            return new Employee(); // Return an empty employee if not found
+        }
+    }
+}

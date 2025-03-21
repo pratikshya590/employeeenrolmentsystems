@@ -84,8 +84,7 @@ public class EmployeeDashboard extends Application {
                 // Search and Display Employee Details
                 try {
                     int empID = Integer.parseInt(txtEmpID.getText().trim()); // Convert input to integer
-                    Employee employee = new Employee().search(empID); // Search Employee by ID
-                    
+                    Employee employee = Employee.search(empID);
                     if (employee.getEmpID() > 0) {
                         txtName.setText(employee.getName());
                         txtDepartment.setText(employee.getDepartment());

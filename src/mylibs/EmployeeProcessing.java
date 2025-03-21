@@ -1,105 +1,130 @@
 package mylibs;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
+
+
+import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EmployeeProcessing {
+
+    // Database connection constants
+    private static final String DRIVER = "com.mysql.cj.jdbc.Driver";
+    private static final String HOST = "localhost";
+    private static final int PORT = 3306;
+    private static final String USER = "root";
+    private static final String PASS = "curtainbangs@13";
+    private static final String DBNAME = "hrm";
+    private static final String URL = "jdbc:mysql://" + HOST + ":" + PORT + "/" + DBNAME;
+
+    // Logger for exception logging
+    private static final Logger logger = Logger.getLogger(EmployeeProcessing.class.getName());
+
     
-    public void insert(Employee employee) { // Insert employee record into the table
-        String DRIVER = "com.mysql.cj.jdbc.Driver";
-        String HOST = "localhost";
-        int PORT = 3306;
-        String USER = "root";
-        String PASS = "curtainbangs@13";
-        String DBNAME = "hrm";
-        String URL = "jdbc:mysql://" + HOST + ":" + PORT + "/" + DBNAME;
-        String SQL = "INSERT INTO employees (name, department, salary, email, status) VALUES (?, ?, ?, ?, ?)";
-        
-        try {
-            Class.forName(DRIVER); // Loading the Driver class
-            Connection conn = DriverManager.getConnection(URL, USER, PASS);
+    
+    public void insert(Employee employee) {
+        String checkSQL = "SELECT COUNT(*) FROM employees WHERE email = ?";
+        String insertSQL = "INSERT INTO employees (name, department, salary, email, status) VALUES (?, ?, ?, ?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+            Class.forName(DRIVER);
             System.out.println("Connected");
-            
-            PreparedStatement pStat = conn.prepareStatement(SQL);
+
+            boolean emailExists = true;
+            String newEmail = employee.getEmail();
+            int count = 1;
+
+            // Step 1: Generate a unique email if needed
+            while (emailExists) {
+                try (PreparedStatement checkStat = conn.prepareStatement(checkSQL)) {
+                    checkStat.setString(1, newEmail);
+                    ResultSet rs = checkStat.executeQuery();
+                    emailExists = rs.next() && rs.getInt(1) > 0;
+                }
+
+                if (emailExists) {
+                    newEmail = employee.getEmail().split("@")[0] + count + "@" + employee.getEmail().split("@")[1];
+                    count++;
+                }
+            }
+
+            employee.setEmail(newEmail); // Set the unique email
+
+            // Step 2: Insert new employee
+            try (PreparedStatement insertStat = conn.prepareStatement(insertSQL)) {
+                insertStat.setString(1, employee.getName());
+                insertStat.setString(2, employee.getDepartment());
+                insertStat.setDouble(3, employee.getSalary());
+                insertStat.setString(4, employee.getEmail());
+                insertStat.setString(5, employee.getStatus());
+
+                insertStat.executeUpdate();
+                System.out.println("Employee inserted successfully with email: " + employee.getEmail());
+            }
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "SQL Error during insert", ex);
+        } catch (ClassNotFoundException ex) {
+            logger.log(Level.SEVERE, "JDBC Driver not found", ex);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Unexpected Error", ex);
+        }
+        System.out.println("Connection closed"); // This will print after the try block
+    }
+
+    public void update(Employee employee) {
+        String SQL = "UPDATE employees SET name = ?, department = ?, salary = ?, status = ? WHERE email = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement pStat = conn.prepareStatement(SQL)) {
+
+            Class.forName(DRIVER); // Loading the Driver class
+            System.out.println("Connected");
+
+            // Setting parameters for the PreparedStatement
             pStat.setString(1, employee.getName());
             pStat.setString(2, employee.getDepartment());
             pStat.setDouble(3, employee.getSalary());
-            pStat.setString(4, employee.getEmail());
-            pStat.setString(5, employee.getStatus());
-            
-            pStat.executeUpdate(); // Insert the data into the table
-            System.out.println("Employee inserted");
-            
-            conn.close(); // Close the connection
-            System.out.println("Connection closed");
+            pStat.setString(4, employee.getStatus());
+            pStat.setString(5, employee.getEmail()); // Update using email
+
+            // Execute the update query
+            pStat.executeUpdate();
+            System.out.println("Employee updated");
+
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "SQL Error during update", ex);
+        } catch (ClassNotFoundException ex) {
+            logger.log(Level.SEVERE, "JDBC Driver not found", ex);
         } catch (Exception ex) {
-            System.out.println("Error: " + ex.getMessage());
+            logger.log(Level.SEVERE, "Unexpected Error", ex);
         }
+        System.out.println("Connection closed");
+    }
+
+    // Delete Employee record
+    public void delete(int empID) {
+        String SQL = "DELETE FROM employees WHERE empID = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS);
+             PreparedStatement pStat = conn.prepareStatement(SQL)) {
+
+            Class.forName(DRIVER); // Loading the Driver class
+            System.out.println("Connected");
+
+            // Setting the empID parameter
+            pStat.setInt(1, empID);
+
+            // Execute the delete query
+            pStat.executeUpdate();
+            System.out.println("Employee deleted");
+
+        } catch (SQLException ex) {
+            logger.log(Level.SEVERE, "SQL Error during delete", ex);
+        } catch (ClassNotFoundException ex) {
+            logger.log(Level.SEVERE, "JDBC Driver not found", ex);
+        } catch (Exception ex) {
+            logger.log(Level.SEVERE, "Unexpected Error", ex);
         }
-     // Update Employee record
-        public void update(Employee employee) {
-            String DRIVER = "com.mysql.cj.jdbc.Driver";
-            String HOST = "localhost";
-            int PORT = 3306;
-            String USER = "root";
-            String PASS = "curtainbangs@13";
-            String DBNAME = "hrm";
-            String URL = "jdbc:mysql://" + HOST + ":" + PORT + "/" + DBNAME;
-            String SQL = "UPDATE employees SET name = ?, department = ?, salary = ?, email = ?, status = ? WHERE id = ?";
-
-            try {
-                Class.forName(DRIVER); // Loading the Driver class
-                Connection conn = DriverManager.getConnection(URL, USER, PASS);
-                System.out.println("Connected");
-                
-                PreparedStatement pStat = conn.prepareStatement(SQL);
-                pStat.setString(1, employee.getName());
-                pStat.setString(2, employee.getDepartment());
-                pStat.setDouble(3, employee.getSalary());
-                pStat.setString(4, employee.getEmail());
-                pStat.setString(5, employee.getStatus());
-                pStat.setInt(6, employee.getId()); // Assuming Employee class has getId method
-                
-                pStat.executeUpdate(); // Update the employee details
-                System.out.println("Employee updated");
-                
-                conn.close(); // Close the connection
-                System.out.println("Connection closed");
-            } catch (Exception ex) {
-                System.out.println("Error: " + ex.getMessage());
-            }
-            }
-        
-         // Delete Employee record
-            public void delete(int employeeId) {
-                String DRIVER = "com.mysql.cj.jdbc.Driver";
-                String HOST = "localhost";
-                int PORT = 3306;
-                String USER = "root";
-                String PASS = "curtainbangs@13";
-                String DBNAME = "hrm";
-                String URL = "jdbc:mysql://" + HOST + ":" + PORT + "/" + DBNAME;
-                String SQL = "DELETE FROM employees WHERE id = ?";
-
-                try {
-                    Class.forName(DRIVER); // Loading the Driver class
-                    Connection conn = DriverManager.getConnection(URL, USER, PASS);
-                    System.out.println("Connected");
-                    
-                    PreparedStatement pStat = conn.prepareStatement(SQL);
-                    pStat.setInt(1, employeeId); // Delete the employee based on id
-                    
-                    pStat.executeUpdate(); // Delete the employee record
-                    System.out.println("Employee deleted");
-                    
-                    conn.close(); // Close the connection
-                    System.out.println("Connection closed");
-                } catch (Exception ex) {
-                    System.out.println("Error: " + ex.getMessage());
-                }
-            
-        }
-    
-
+        System.out.println("Connection closed"); // This will print after the try block
+    }
 }
