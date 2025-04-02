@@ -1,10 +1,12 @@
 package Assignment;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 public class SignUpForm extends Application {
 
@@ -56,11 +58,23 @@ public class SignUpForm extends Application {
             String password = txtPassword.getText();
 
             if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || password.isEmpty()) {
-                lblMessage.setText("All fields are required.");
-                lblMessage.setStyle("-fx-text-fill: red;");
+                lblMessage.setText("All fields are required!");
+                lblMessage.setStyle("-fx-text-fill: red; -fx-font-weight: bold;");
             } else {
-                lblMessage.setText("Sign up successful!");
+                lblMessage.setText("Sign Up Successfully!");
                 lblMessage.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
+
+                // Pause for 1.5 seconds before switching to login form
+                PauseTransition pause = new PauseTransition(Duration.seconds(1.5));
+                pause.setOnFinished(e -> {
+                    try {
+                        new LoginForm().start(new Stage()); // Load and display login form
+                        primaryStage.close(); // Close current window
+                    } catch (Exception ex) {
+                        System.out.println("Error " + ex.getMessage());
+                    }
+                });
+                pause.play(); // Start delay timer
             }
         });
 

@@ -1,11 +1,12 @@
 package Assignment;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
-import javafx.event.ActionEvent;
 
 public class LoginForm extends Application {
     
@@ -15,8 +16,8 @@ public class LoginForm extends Application {
 
         // GridPane for layout
         GridPane grid = new GridPane();
-        grid.setVgap(10); // Vertical gap between rows
-        grid.setHgap(10); // Horizontal gap between columns
+        grid.setVgap(10);
+        grid.setHgap(10);
         grid.setStyle("-fx-padding: 20px; -fx-alignment: center;");
 
         // Title
@@ -30,7 +31,7 @@ public class LoginForm extends Application {
         ToggleButton btnHR = new ToggleButton("HR");
         btnEmployee.setToggleGroup(toggleGroup);
         btnHR.setToggleGroup(toggleGroup);
-        btnEmployee.setSelected(true);
+        btnEmployee.setSelected(true); // Default selection
 
         HBox toggleBox = new HBox(10, btnEmployee, btnHR);
         grid.add(new Label("Select login type"), 1, 1);
@@ -58,23 +59,38 @@ public class LoginForm extends Application {
         btnLogin.setStyle("-fx-background-color: darkgreen; -fx-text-fill: white;");
         btnLogin.setMinWidth(200);
 
-        // Success Message Label (Initially Hidden)
-        Label successMessage = new Label();
-        successMessage.setStyle("-fx-text-fill: green; -fx-font-weight: bold;");
-
         // Event Handler for Login Button
         btnLogin.setOnAction((ActionEvent event) -> {
-            successMessage.setText("Login successfully!");
+            ToggleButton selectedToggle = (ToggleButton) toggleGroup.getSelectedToggle();
+            
+            if (selectedToggle != null) {
+                String selectedRole = selectedToggle.getText();
+                System.out.println("Selected Role: " + selectedRole); // Debugging output
+
+                try {
+                    if ("Employee".equals(selectedRole)) {
+                        System.out.println("Opening SalaryDetails page...");
+                        new SalaryDetails().start(new Stage()); // Open SalaryDetails page
+                    } else if ("HR".equals(selectedRole)) {
+                        System.out.println("Opening EmployeeEnrolment page...");
+                        new EmployeeEnrolment().start(new Stage()); // Open EmployeeEnrolment page
+                    }
+                    primaryStage.close(); // Close the login window
+                } catch (Exception ex) {
+                    System.out.println("Error: " + ex.getMessage());
+                }
+            } else {
+                System.out.println("No role selected."); 
+            }
         });
 
         grid.add(btnLogin, 1, 6);
-        grid.add(successMessage, 1, 7); // Message appears below login button
 
         // Sign Up Link
         Label signUp = new Label("Sign Up");
         signUp.setStyle("-fx-text-fill: blue; -fx-underline: true;");
         HBox signUpBox = new HBox(new Label("Don't have an account? "), signUp);
-        grid.add(signUpBox, 1, 8);
+        grid.add(signUpBox, 1, 7);
 
         // Scene Setup
         Scene scene = new Scene(grid, 450, 400);

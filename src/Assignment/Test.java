@@ -9,9 +9,9 @@ public class Test {
 
         
         
-        // Create and insert a new employee
-        Employee newEmployee = new Employee(1, "Prati Shrestha", "IT", 70000.00, "prati@gmail.com", "Active");
-        empProcess.insert(newEmployee);
+    // Create and insert a new employee
+             Employee newEmployee = new Employee(1, "Prati Shrestha", "IT", 70000.00, "prati@gmail.com", "Active");
+    empProcess.insert(newEmployee);
         
         // Update the employee's department and salary
         Employee updatedEmployee = new Employee(1, "Prati Shrestha", "HR", 80000.00, "prati@gmail.com", "Active");
